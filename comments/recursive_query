@@ -1,0 +1,32 @@
+WITH EXPL(comment_id, parent_comment_id, user_id)  AS 
+(
+	SELECT ROOT.id, ROOT.parent_comment_id, ROOT.user_id
+	FROM comment ROOT
+	WHERE ROOT.parent_comment_id = NULL
+	
+	UNION ALL
+	
+	SELECT CHILD.id, CHILD.parent_comment_id, CHILD.user_id
+	FROM EXPL PARENT, comment CHILD
+	WHERE PARENT.id = CHILD.parent_comment_id
+)
+
+SELECT DISTINCT comment_id, parent_comment_id, user_id 
+FROM EXPL
+ORDER BY parent_comment_id, comment_id
+
+WITH RECURSIVE CommentCTE AS (
+	SELECT id, parent_comment_id, user_id
+	FROM comment
+	WHERE parent_comment_id is NULL
+	
+	UNION ALL
+	
+	SELECT child.id, child.parent_comment_id, child.user_id
+	FROM comment child
+	JOIN CommentCTE
+	ON child.parent_comment_id = CommentCTE.id
+)
+SELECT * FROM CommentCTE
+
+select * from comment
